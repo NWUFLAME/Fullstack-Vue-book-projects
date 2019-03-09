@@ -39,7 +39,7 @@ const getters = {
   */
   getNotes: state => state.notes,
   getTimestamps: state => state.timestamps,
-  getNoteCount: state => state.length
+  getNoteCount: state => state.notes.length
 }
 
 const store = new Vuex.Store({
@@ -74,13 +74,10 @@ const inputComponent = {
 const noteCountComponent = {
   template:
     `<div class="note-count">Note count: <strong>{{ noteCount }}</strong></div>`,
-  data () {
-    return {
-      noteCount: 0
+  computed: {
+    noteCount() {
+      return this.$store.getters.getNoteCount;
     }
-  },
-  created() {
-    EventBus.$on('add-note', event => this.noteCount++);
   }
 };
 
@@ -88,14 +85,14 @@ new Vue({
   el: "#app",
   store,     // substitui o store: store em ES6
   data: {
-    notes: [],
-    timestamps: [],
     placeholder: 'Enter a note'
   },
-  methods: {
-    addNote(event) {
-        this.notes.push(event.note);
-        this.timestamps.push(event.timestamp);
+  computed: {
+    notes() {
+      return this.$store.getters.getNotes;
+    },
+    timestamps() {
+      return this.$store.getters.getTimestamps;
     }
   },
   components: {
