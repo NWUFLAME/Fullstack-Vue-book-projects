@@ -98,8 +98,5 @@ new Vue({
   components: {
     "input-component": inputComponent,
     "note-count-component": noteCountComponent
-  },
-  created() {
-    EventBus.$on('add-note', event => this.addNote(event));
   }
 });
