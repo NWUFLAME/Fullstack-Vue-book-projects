@@ -27,9 +27,8 @@ export default {
 </script>
 
 <style>
-html,
-body {
-  background: #f2f6fa;
+html, body {
+  background: #F2F6FA;
 }
 
 #app {
@@ -40,8 +39,7 @@ body {
 }
 
 @media screen and (min-width: 769px) {
-  html,
-  body {
+  html, body {
     height: 100%;
   }
 }
