@@ -67,7 +67,7 @@ const InputForm = {
       return this.fields.newItem.length <= 20;
     },
     isNotUrgent() {
-      return this.fields.urgency === 'Nonessential';
+      return (this.fields.urgency !== 'Moderate' && this.fields.urgency !== 'Urgent');
     }
   },
   methods: {
