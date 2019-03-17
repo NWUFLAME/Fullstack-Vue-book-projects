@@ -5,7 +5,11 @@ const InputForm = {
       <div class="field">
         <label>New Item</label>
         <input v-model="fields.newItem" type="text" placeholder="Add an item!" />
+        <span style="float: right">{{ fields.newItem.length }}/20</span>
         <span style="color: red">{{ fieldErrors.newItem }}</span>
+        <span v-if="isNewItemInputLimitExceeded" style="color: red; display: block">
+          Must be under twenty characters
+        </span>
       </div>
       <div class="field">
         <label>Email</label>
@@ -21,6 +25,9 @@ const InputForm = {
           <option>Urgent</option>
         </select>
         <span style="color: red">{{ fieldErrors.urgency }}</span>
+        <span v-if="isNotUrgent" style="color: red; display: block">
+          Must be moderate to urgent
+        </span>
       </div>
       <div class="field">
         <div class="ui checkbox">
@@ -29,7 +36,7 @@ const InputForm = {
           <span style="color: red">{{ fieldErrors.termsAndConditions }}</span>
         </div>
       </div>
-      <button class="ui button">Submit</button>
+      <button :disabled="isNewItemInputLimitExceeded || isNotUrgent" class="ui button">Submit</button>
     </form>
     <div class="ui segment">
       <h4 class="ui header">Items</h4>
@@ -54,6 +61,14 @@ const InputForm = {
       },
       items: []
     };
+  },
+  computed: {
+    isNewItemInputLimitExceeded() {
+      return this.fields.newItem.length <= 20;
+    },
+    isNotUrgent() {
+      return this.fields.urgency === 'Nonessential';
+    }
   },
   methods: {
     submitForm(evt) {
