@@ -1,3 +1,26 @@
+let apiClient = {
+  loadItems: function() {
+    return {
+      then: function(cb) {
+        setTimeout(() => {
+          cb(JSON.parse(localStorage.items || "[]"));
+        }, 1000);
+      }
+    };
+  },
+  saveItems: function(items) {
+    const success = !!(this.count++ % 2);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (!success) return reject({ success });
+        localStorage.items = JSON.stringify(items);
+        return resolve({ success });
+      }, 1000);
+    });
+  },
+  count: 1
+};
+
 const InputForm = {
   template: `
   <div class="input-form">
@@ -36,11 +59,15 @@ const InputForm = {
           <span style="color: red">{{ fieldErrors.termsAndConditions }}</span>
         </div>
       </div>
-      <button :disabled="isNewItemInputLimitExceeded || isNotUrgent" class="ui button">Submit</button>
+      <button v-if="saveStatus === 'SAVING'" disabled class="ui button">Saving...</button>
+      <button v-if="saveStatus === 'SUCCESS'" :disabled="isNewItemInputLimitExceeded || isNotUrgent" class="ui button">Saved! Submit another</button>
+      <button v-if="saveStatus === 'ERROR'" :disabled="isNewItemInputLimitExceeded || isNotUrgent" class="ui button">Save Failed - Retry?</button>
+      <button v-if="saveStatus === 'READY'" :disabled="isNewItemInputLimitExceeded || isNotUrgent" class="ui button">Submit</button>
     </form>
     <div class="ui segment">
       <h4 class="ui header">Items</h4>
       <ul>
+        <div v-if="loading" class="ui active inline loader"></div>
         <li v-for="item in items" class="item">{{ item }}</li>
       </ul>
     </div>
@@ -59,7 +86,9 @@ const InputForm = {
         urgency: undefined,
         termsAndConditions: undefined
       },
-      items: []
+      items: [],
+      loading: false,
+      saveStatus: "READY"
     };
   },
   computed: {
@@ -67,19 +96,35 @@ const InputForm = {
       return this.fields.newItem.length <= 20;
     },
     isNotUrgent() {
-      return (this.fields.urgency !== 'Moderate' && this.fields.urgency !== 'Urgent');
+      return (
+        this.fields.urgency !== "Moderate" && this.fields.urgency !== "Urgent"
+      );
     }
   },
   methods: {
     submitForm(evt) {
       evt.preventDefault();
+
       this.fieldErrors = this.validateForm(this.fields);
       if (Object.keys(this.fieldErrors).length) return;
-      this.items.push(this.fields.newItem);
-      this.fields.newItem = "";
-      this.fields.email = "";
-      this.fields.urgency = "";
-      this.fields.termsAndConditions = false;
+
+      const items = [...this.items, this.fields.newItem];
+
+      this.saveStatus = "SAVING";
+      apiClient
+        .saveItems(items)
+        .then(() => {
+          this.items = items;
+          this.fields.newItem = "";
+          this.fields.email = "";
+          this.fields.urgency = "";
+          this.fields.termsAndConditions = false;
+          this.saveStatus = "SUCCESS";
+        })
+        .catch(err => {
+          console.log(err);
+          this.saveStatus = "ERROR";
+        });
     },
     validateForm(fields) {
       const errors = {};
@@ -99,6 +144,13 @@ const InputForm = {
       const re = /\S+@\S+\.\S+/;
       return re.test(email);
     }
+  },
+  created() {
+    (this.loading = true),
+      apiClient.loadItems().then(items => {
+        this.items = items;
+        this.loading = false;
+      });
   }
 };
 
