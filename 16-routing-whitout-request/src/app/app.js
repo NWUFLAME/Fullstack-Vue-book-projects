@@ -1,3 +1,7 @@
+import Vue from 'vue';
+
+const EventBus = new Vue();
+
 const DunkirkBlurb = {
   name: "dunkirk-blurb",
   template: `<div>
@@ -58,6 +62,11 @@ const View = {
     } else {
       this.currentView = this.getRouteObject().component;
     }
+
+    // Event listener for link navigation
+    EventBus.$on('navigate', () => {
+      this.currentView = this.getRouteObject().component;
+    });
   },
   methods: {
     getRouteObject() {
@@ -66,20 +75,43 @@ const View = {
   }
 };
 
+const Link = {
+  name: 'router-link',
+  props: {
+    to: {
+      type: String,
+      required: true
+    }
+  },
+  template: `<a @click="navigate" :href="to">{{ to }}</a>`,
+  methods: {
+    navigate(evt) {
+      evt.preventDefault();
+      window.history.pushState(null, null, this.to);
+      EventBus.$emit('navigate');
+    }
+  }
+};
+
+window.addEventListener('popstate', () => {
+  EventBus.$emit('navigate');
+});
+
 const App = {
   name: "App",
   template: `<div id="app">
     <div class="movies">
       <h2>Which movie?</h2>
-      <a href="/dunkirk">/dunkirk</a>
-      <a href="/interstellar">/interstellar</a>
-      <a href="/the-dark-knight-rises">/the-dark-knight-rises</a>
+      <router-link to="/dunkirk"></router-link>
+      <router-link to="/interstellar"></router-link>
+      <router-link to="/the-dark-knight-rises"></router-link>
 
       <router-view></router-view>
     </div>
   </div>`,
   components: {
-    "router-view": View
+    "router-view": View,
+    "router-link": Link
   }
 };
 
