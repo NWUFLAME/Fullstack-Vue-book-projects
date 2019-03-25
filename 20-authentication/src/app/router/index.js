@@ -31,7 +31,14 @@ const router = new VueRouter({
       {
         path: '/products/:id',
         component: ProductItem,
-        props: true
+        props: true,
+        beforeEnter: (to, from, next) => {
+          const id = to.params.id;
+          if (![1, 2, 3, 4].includes(Number(id))) 
+            next('/not-found');
+          else 
+            next();
+        }
       },
       {
         path: '/cart',

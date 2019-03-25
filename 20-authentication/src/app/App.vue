@@ -29,18 +29,19 @@ import { mapGetters } from "vuex";
 export default {
   name: "App",
   computed: {
-    ...mapGetters(["token", "cartQuantity"])
+    ...mapGetters([
+      "token", 
+      "cartQuantity"
+    ])
   },
   created() {
     const token = localStorage.getItem("token");
     if (token) {
-      console.log("existe o token")
       this.updateInitialState(token);
     }
   },
   watch: {
     token() {
-      console.log("estou no watch");
       if (this.token) {
         this.updateInitialState(token);
       }
@@ -50,6 +51,8 @@ export default {
     logout() {
       this.$store.dispatch("logout").then(() => {
           this.$router.push("/login");
+      }).catch((error) => {
+        console.log(error);
       });
     },
     updateInitialState(token) {
